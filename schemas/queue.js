@@ -1,18 +1,24 @@
-const {Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
-const queueSchema = new Schema ({
-    dateQueue:{
-        type: Date,
-        required: true
+const queueSchema = new Schema(
+  {
+    topic: {
+      type: String,
     },
-    status:{
-        type: Boolean,
-        default:false
+    dateQueue: {
+      type: Date,
+      required: true,
     },
-    userId:{
-        type:String,
-        required:true
-    }
-}, {timestamps:true});
+    status: {
+      type: Boolean,
+      default: false,
+    },
+    userId: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-module.exports = model('queue',queueSchema); 
+module.exports = model("queue", queueSchema);
