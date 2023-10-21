@@ -5,6 +5,9 @@ const queueSchema = new Schema(
     topic: {
       type: String,
     },
+    note: {
+      type: String,
+    },
     dateQueue: {
       type: Date,
       required: true,
