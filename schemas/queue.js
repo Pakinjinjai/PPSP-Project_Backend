@@ -4,9 +4,11 @@ const queueSchema = new Schema(
   {
     topic: {
       type: String,
+      default: null,
     },
     note: {
       type: String,
+      default: null,
     },
     dateQueue: {
       type: Date,
