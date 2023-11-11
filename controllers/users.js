@@ -45,19 +45,30 @@ const register = async (req, res) => {
     }
 
     const passwordHash = await passwordHashing(password);
+    req.body.password = passwordHash;
 
-    const user = await userModel.create({
-      email: email,
-      password: passwordHash,
-    });
+    const user = await userModel.create(req.body);
     await createProfile(user._id);
     return res.status(201).json({ message: "สร้างรหัสผ่านสำเร็จ", user: user });
   } catch (err) {
     return res.status(400).json(err);
   }
 };
+const getUserProfile = async (req, res) => {
+  const id = req.principal;
+
+  const existPatient = await userModel.findById(id);
+
+  if (!existPatient) {
+    return res
+      .status(404)
+      .json({ message: `ไม่พบโปรไฟล์ของเจ้าของไอดี ${id}` });
+  }
+  res.status(200).json({ message: "ค้นหาสำเร็จ", user: existPatient });
+};
 
 module.exports = {
   login,
   register,
+  getUserProfile,
 };
