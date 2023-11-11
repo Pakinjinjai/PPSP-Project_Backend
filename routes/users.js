@@ -1,6 +1,11 @@
 const express = require("express");
 const route = express.Router();
-const { login, register, getUserProfile } = require("../controllers/users");
+const {
+  login,
+  register,
+  getUserProfile,
+  updateUserProfile,
+} = require("../controllers/users");
 const { authorized } = require("../middleware/authorizations");
 
 // route.get("/",(req,res) => {
@@ -10,5 +15,6 @@ const { authorized } = require("../middleware/authorizations");
 route.post("/login", login);
 route.post("/register", register);
 route.get("/me", authorized, getUserProfile);
+route.patch("/update", authorized, updateUserProfile);
 
 module.exports = route;

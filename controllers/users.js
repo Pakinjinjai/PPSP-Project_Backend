@@ -66,9 +66,30 @@ const getUserProfile = async (req, res) => {
   }
   res.status(200).json({ message: "ค้นหาสำเร็จ", user: existPatient });
 };
+const updateUserProfile = async (req, res) => {
+  const id = req.principal;
+  const existPatient = await userModel.findOneAndUpdate(
+    { _id: id }, // ใช้ _id แทน userId ใน query
+    { $set: req.body }, // ใช้ $set เพื่ออัพเดทเฉพาะข้อมูลที่ถูกส่งมา
+    { returnDocument: "after" }
+  );
+
+  if (!existPatient) {
+    req.body.userId = id;
+    const saveUser = await userModel.create(req.body);
+    return res
+      .status(200)
+      .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: saveUser });
+  }
+
+  return res
+    .status(201)
+    .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existPatient });
+};
 
 module.exports = {
   login,
   register,
   getUserProfile,
+  updateUserProfile,
 };
