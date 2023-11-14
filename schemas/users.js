@@ -39,6 +39,64 @@ const userSchema = new Schema(
       default: null,
       required: true,
     },
+    address: {
+      houseNo: {
+        type: String,
+        default: null,
+      },
+      province: {
+        type: String,
+        default: null,
+      },
+      district: {
+        type: String,
+        default: null,
+      },
+      subDistrict: {
+        type: String,
+        default: null,
+      },
+      postalCode: {
+        type: String,
+        default: null,
+      },
+      road: {
+        type: String,
+        default: null,
+      },
+      soi: {
+        type: String,
+        default: null,
+      },
+      moo: {
+        type: String,
+        default: null,
+      },
+    },
+    noteDrug: {
+      type: String,
+      default: null,
+    },
+    noteMedicine: {
+      type: String,
+      default: null,
+    },
+    noteDisease: {
+      type: String,
+      default: null,
+    },
+    health: {
+      type: String,
+      default: null,
+    },
+    income: {
+      type: Number,
+      default: null,
+    },
+    takingMed: {
+      type: String,
+      default: null,
+    },
     role: {
       type: Number,
       default: 2001,
