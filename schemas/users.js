@@ -34,7 +34,7 @@ const userSchema = new Schema(
       default: null,
       required: true,
     },
-    birtdate: {
+    birthdate: {
       type: Date,
       default: null,
       required: true,
