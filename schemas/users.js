@@ -85,14 +85,6 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-    health: {
-      type: String,
-      default: null,
-    },
-    income: {
-      type: Number,
-      default: null,
-    },
     takingMed: {
       type: String,
       default: null,
