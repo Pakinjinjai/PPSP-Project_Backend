@@ -2,6 +2,7 @@ const userModel = require("../schemas/users");
 const { passwordHashing, passwordCompare } = require("../configs/hash");
 const { createJWT } = require("../configs/jsonwebtoken");
 const { response } = require("express");
+const dayjs = require("dayjs");
 
 const register = async (req, res) => {
   try {
@@ -19,6 +20,7 @@ const register = async (req, res) => {
 
     const passwordHash = await passwordHashing(password);
     req.body.password = passwordHash;
+    req.body._id = dayjs().unix();
 
     const user = await userModel.create(req.body);
     return res.status(201).json({ message: "สร้างรหัสผ่านสำเร็จ", user: user });
