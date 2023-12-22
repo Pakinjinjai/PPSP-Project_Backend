@@ -1,8 +1,14 @@
 const userModel = require("../schemas/users");
 const { passwordHashing, passwordCompare } = require("../configs/hash");
 const { createJWT } = require("../configs/jsonwebtoken");
-const { createProfile } = require("./profile_patient");
 
+const createProfile = async (id) => {
+  try {
+    await patientModel.create({ userId: id });
+  } catch (error) {
+    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+  }
+};
 const login = async (req, res) => {
   const { email, password } = req.body; //email,password
 
