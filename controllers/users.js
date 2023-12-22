@@ -1,12 +1,29 @@
 const userModel = require("../schemas/users");
 const { passwordHashing, passwordCompare } = require("../configs/hash");
 const { createJWT } = require("../configs/jsonwebtoken");
+const { response } = require("express");
 
-const createProfile = async (id) => {
+const register = async (req, res) => {
   try {
-    await patientModel.create({ userId: id });
-  } catch (error) {
-    res.status(500).json({ message: "เกิดข้อผิดพลาด" });
+    const { email, password, role } = req.body;
+
+    if (role != undefined) {
+      return res.status(400).json({ message: "เกิดข้อผิดพลาด" });
+    }
+
+    const existsUser = await userModel.findOne({ email: email });
+
+    if (existsUser) {
+      return res.status(400).json({ message: "มีผู้ใช้งานอยู่ในระบบ" });
+    }
+
+    const passwordHash = await passwordHashing(password);
+    req.body.password = passwordHash;
+
+    const user = await userModel.create(req.body);
+    return res.status(201).json({ message: "สร้างรหัสผ่านสำเร็จ", user: user });
+  } catch (err) {
+    return res.status(400).json(err);
   }
 };
 const login = async (req, res) => {
@@ -35,30 +52,6 @@ const login = async (req, res) => {
   return res
     .status(200)
     .json({ message: "เข้าสู่ระบบสำเร็จ", accessToken: accessToken });
-};
-const register = async (req, res) => {
-  try {
-    const { email, password, role } = req.body;
-
-    if (role != undefined) {
-      return res.status(400).json({ message: "เกิดข้อผิดพลาด" });
-    }
-
-    const existsUser = await userModel.findOne({ email: email });
-
-    if (existsUser) {
-      return res.status(400).json({ message: "มีผู้ใช้งานอยู่ในระบบ" });
-    }
-
-    const passwordHash = await passwordHashing(password);
-    req.body.password = passwordHash;
-
-    const user = await userModel.create(req.body);
-    await createProfile(user._id);
-    return res.status(201).json({ message: "สร้างรหัสผ่านสำเร็จ", user: user });
-  } catch (err) {
-    return res.status(400).json(err);
-  }
 };
 const getUserProfile = async (req, res) => {
   const id = req.principal;
