@@ -20,7 +20,7 @@ const register = async (req, res) => {
 
     const passwordHash = await passwordHashing(password);
     req.body.password = passwordHash;
-    req.body._id = dayjs().unix();
+    req.body._id = "HN" + dayjs().unix();
 
     const user = await userModel.create(req.body);
     return res.status(201).json({ message: "สร้างรหัสผ่านสำเร็จ", user: user });
@@ -87,10 +87,19 @@ const updateUserProfile = async (req, res) => {
     .status(201)
     .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existPatient });
 };
+const getAllUser = async (req, res) => {
+  try {
+    const users = await userModel.find().sort({ updatedAt: "desc" });
+    return res.status(201).json(users);
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+};
 
 module.exports = {
   login,
   register,
   getUserProfile,
   updateUserProfile,
+  getAllUser
 };

@@ -5,6 +5,7 @@ const {
   register,
   getUserProfile,
   updateUserProfile,
+  getAllUser
 } = require("../controllers/users");
 const { authorized } = require("../middleware/authorizations");
 
@@ -15,6 +16,7 @@ const { authorized } = require("../middleware/authorizations");
 route.post("/login", login);
 route.post("/register", register);
 route.get("/me", authorized, getUserProfile);
+route.get("/getallusers", getAllUser);
 route.patch("/update", authorized, updateUserProfile);
 
 module.exports = route;
