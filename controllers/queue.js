@@ -50,7 +50,7 @@ const deleteQueue = async (req, res) => {
     if (!existQueue) {
       return res.status(400).json({ message: "ไม่พบคิวที่ต้องการลบ" });
     }
-    return res.status(204).end();
+    return res.status(200).json({ message: "ลบคิวสำเร็จ" }).end();
   } catch (error) {
     return res.status(500).json(error);
   }

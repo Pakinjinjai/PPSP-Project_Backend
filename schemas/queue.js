@@ -14,6 +14,9 @@ const queueSchema = new Schema(
       type: Date,
       required: true,
     },
+    endDate: {
+      type: Date,
+    },
     status: {
       type: Boolean,
       default: false,

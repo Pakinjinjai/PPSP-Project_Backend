@@ -58,24 +58,24 @@ const login = async (req, res) => {
 const getUserProfile = async (req, res) => {
   const id = req.principal;
 
-  const existPatient = await userModel.findById(id);
+  const existUsers = await userModel.findById(id);
 
-  if (!existPatient) {
+  if (!existUsers) {
     return res
       .status(404)
       .json({ message: `ไม่พบโปรไฟล์ของเจ้าของไอดี ${id}` });
   }
-  res.status(200).json({ message: "ค้นหาสำเร็จ", user: existPatient });
+  res.status(200).json({ message: "ค้นหาสำเร็จ", user: existUsers });
 };
 const updateUserProfile = async (req, res) => {
   const id = req.principal;
-  const existPatient = await userModel.findOneAndUpdate(
+  const existUsers = await userModel.findOneAndUpdate(
     { _id: id }, // ใช้ _id แทน userId ใน query
     { $set: req.body }, // ใช้ $set เพื่ออัพเดทเฉพาะข้อมูลที่ถูกส่งมา
     { returnDocument: "after" }
   );
 
-  if (!existPatient) {
+  if (!existUsers) {
     req.body.userId = id;
     const saveUser = await userModel.create(req.body);
     return res
@@ -85,8 +85,24 @@ const updateUserProfile = async (req, res) => {
 
   return res
     .status(201)
-    .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existPatient });
+    .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existUsers });
 };
+// const updateProfileBy_Id = async (req, res) => {
+//   try {
+//     const UsersId = req.params.UsersId;
+//     const existUsers = await userModel.findByIdAndUpdate(UsersId, req.body, {
+//       returnDocument: "after",
+//     });
+//     if (!existUsers) {
+//       return res.status(404).json({ message: "ไม่พบผู้ใช้งานที่ต้องการแก้ไข" });
+//     }
+//     return res
+//       .status(200)
+//       .json({ message: "อัพเดทผู้ใช้งานสำเร็จ" }, existUsers);
+//   } catch (error) {
+//     return res.status(500).json(error);
+//   }
+// };
 const getAllUser = async (req, res) => {
   try {
     const users = await userModel.find().sort({ updatedAt: "desc" });
@@ -95,11 +111,24 @@ const getAllUser = async (req, res) => {
     return res.status(400).json(error);
   }
 };
+const deleteUser = async (req, res) => {
+  try {
+    const UsersId = req.params.UsersId;
+    const existUsers = await userModel.findByIdAndDelete(UsersId);
+    if (!existUsers) {
+      return res.status(400).json({ message: "ไม่พบคิวที่ต้องการลบ" });
+    }
+    return res.status(200).json({ message: "ลบผู้ใช้งานสำเร็จ" }).end();
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
 
 module.exports = {
   login,
   register,
   getUserProfile,
   updateUserProfile,
-  getAllUser
+  getAllUser,
+  deleteUser,
 };
