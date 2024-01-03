@@ -87,26 +87,11 @@ const updateUserProfile = async (req, res) => {
     .status(201)
     .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existUsers });
 };
-// const updateProfileBy_Id = async (req, res) => {
-//   try {
-//     const UsersId = req.params.UsersId;
-//     const existUsers = await userModel.findByIdAndUpdate(UsersId, req.body, {
-//       returnDocument: "after",
-//     });
-//     if (!existUsers) {
-//       return res.status(404).json({ message: "ไม่พบผู้ใช้งานที่ต้องการแก้ไข" });
-//     }
-//     return res
-//       .status(200)
-//       .json({ message: "อัพเดทผู้ใช้งานสำเร็จ" }, existUsers);
-//   } catch (error) {
-//     return res.status(500).json(error);
-//   }
-// };
 const getAllUser = async (req, res) => {
   try {
-    const users = await userModel.find().sort({ updatedAt: "desc" });
-    return res.status(201).json(users);
+    const filters = req.query == undefined ? {}: req.query
+    const users = await userModel.find(filters).sort({ updatedAt: "desc" });
+    return res.status(200).json(users);
   } catch (error) {
     return res.status(400).json(error);
   }
@@ -123,6 +108,19 @@ const deleteUser = async (req, res) => {
     return res.status(500).json(error);
   }
 };
+const searchUser = async (req,res)=> {
+  try {
+    const { Search } = req.query ;
+    var regex = new RegExp(Search, 'i');
+    // console.log(Search);
+    const search_data = await userModel.find({ $or:[ {firstname:regex},{lastname:regex},{_id:regex},{email:regex},{phoneNo:regex},{idCard:regex}] });
+    // console.log(search_data);
+    return res.status(200).json({message:"ค้นหาสำเร็จ", Search:search_data})
+  } catch (error) {
+    return res.status(400).json({message:"ค้นหาไม่สำเร็จ",error:error});
+  }
+};
+
 
 module.exports = {
   login,
@@ -131,4 +129,5 @@ module.exports = {
   updateUserProfile,
   getAllUser,
   deleteUser,
+  searchUser
 };
