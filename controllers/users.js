@@ -1,4 +1,6 @@
 const userModel = require("../schemas/users");
+const healthModel = require("../schemas/health");
+const queueModel = require("../schemas/queue");
 const { passwordHashing, passwordCompare } = require("../configs/hash");
 const { createJWT } = require("../configs/jsonwebtoken");
 const { response } = require("express");
@@ -87,13 +89,23 @@ const updateUserProfile = async (req, res) => {
     .status(201)
     .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existUsers });
 };
-const getAllUser = async (req, res) => {
-  try {
-    const filters = req.query == undefined ? {}: req.query
-    const users = await userModel.find(filters).sort({ updatedAt: "desc" });
-    return res.status(200).json(users);
-  } catch (error) {
-    return res.status(400).json(error);
+const getAllUser = async (req, res) => { // ฟังก์ชันที่ใช้ดึงข้อมูลผู้ใช้ทั้งหมดพร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้
+  try { // เริ่มต้นการใช้งาน try-catch เพื่อจัดการข้อผิดพลาดที่เป็นไปได้
+    const users = await userModel.find().sort({ updatedAt: "desc" }); // ดึงข้อมูลผู้ใช้ทั้งหมดจาก MongoDB และเรียงลำดับตามวันที่แก้ไขล่าสุด
+
+    const usersWithHealthAndQueue = await Promise.all(users.map(async (user) => { // สร้าง Promise สำหรับแต่ละผู้ใช้เพื่อดึงข้อมูลสุขภาพและคิว
+      const healthData = await healthModel.aggregate([ // ค้นหาข้อมูลสุขภาพล่าสุดของผู้ใช้ด้วย aggregate pipeline
+        { $match: { userId: user._id } }, // เลือกข้อมูลที่ตรงกับ userId ของผู้ใช้นั้น
+        { $sort: { createdAt: -1 } }, // เรียงลำดับข้อมูลตามวันที่สร้างล่าสุด
+        { $limit: 1 } // จำกัดข้อมูลให้เหลือแค่หนึ่งรายการ (ข้อมูลล่าสุด)
+      ]);
+      const queueData = await queueModel.find({ userId: user._id }).sort({ updatedAt: "desc" }); // ดึงข้อมูลคิวของผู้ใช้โดยเรียงลำดับตามวันที่แก้ไขล่าสุด
+      return { ...user._doc, health: healthData[0], queue: queueData }; // ส่งคืนข้อมูลผู้ใช้พร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้นั้น
+    }));
+
+    return res.status(200).json(usersWithHealthAndQueue); // ส่งข้อมูลผู้ใช้ที่มีข้อมูลสุขภาพและคิวกลับไปในรูปแบบ JSON
+  } catch (error) { // จัดการข้อผิดพลาดเมื่อเกิดข้อผิดพลาดในการดึงข้อมูล
+    return res.status(400).json(error); // ส่งข้อผิดพลาดกลับไปในรูปแบบ JSON พร้อมรหัสสถานะ 400
   }
 };
 const deleteUser = async (req, res) => {
