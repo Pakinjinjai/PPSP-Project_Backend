@@ -89,23 +89,64 @@ const updateUserProfile = async (req, res) => {
     .status(201)
     .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existUsers });
 };
-const getAllUser = async (req, res) => { // ฟังก์ชันที่ใช้ดึงข้อมูลผู้ใช้ทั้งหมดพร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้
-  try { // เริ่มต้นการใช้งาน try-catch เพื่อจัดการข้อผิดพลาดที่เป็นไปได้
-    const users = await userModel.find().sort({ updatedAt: "desc" }); // ดึงข้อมูลผู้ใช้ทั้งหมดจาก MongoDB และเรียงลำดับตามวันที่แก้ไขล่าสุด
+// const getAllUser = async (req, res) => { // ฟังก์ชันที่ใช้ดึงข้อมูลผู้ใช้ทั้งหมดพร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้
+//   try { // เริ่มต้นการใช้งาน try-catch เพื่อจัดการข้อผิดพลาดที่เป็นไปได้
+//     const users = await userModel.find().sort({ updatedAt: "desc" }); // ดึงข้อมูลผู้ใช้ทั้งหมดจาก MongoDB และเรียงลำดับตามวันที่แก้ไขล่าสุด
 
-    const usersWithHealthAndQueue = await Promise.all(users.map(async (user) => { // สร้าง Promise สำหรับแต่ละผู้ใช้เพื่อดึงข้อมูลสุขภาพและคิว
-      const healthData = await healthModel.aggregate([ // ค้นหาข้อมูลสุขภาพล่าสุดของผู้ใช้ด้วย aggregate pipeline
-        { $match: { userId: user._id } }, // เลือกข้อมูลที่ตรงกับ userId ของผู้ใช้นั้น
-        { $sort: { createdAt: -1 } }, // เรียงลำดับข้อมูลตามวันที่สร้างล่าสุด
-        { $limit: 1 } // จำกัดข้อมูลให้เหลือแค่หนึ่งรายการ (ข้อมูลล่าสุด)
-      ]);
-      const queueData = await queueModel.find({ userId: user._id }).sort({ updatedAt: "desc" }); // ดึงข้อมูลคิวของผู้ใช้โดยเรียงลำดับตามวันที่แก้ไขล่าสุด
-      return { ...user._doc, health: healthData[0], queue: queueData }; // ส่งคืนข้อมูลผู้ใช้พร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้นั้น
-    }));
+//     const usersWithHealthAndQueue = await Promise.all(users.map(async (user) => { // สร้าง Promise สำหรับแต่ละผู้ใช้เพื่อดึงข้อมูลสุขภาพและคิว
+//       const healthData = await healthModel.aggregate([ // ค้นหาข้อมูลสุขภาพล่าสุดของผู้ใช้ด้วย aggregate pipeline
+//         { $match: { userId: user._id } }, // เลือกข้อมูลที่ตรงกับ userId ของผู้ใช้นั้น
+//         { $sort: { createdAt: -1 } }, // เรียงลำดับข้อมูลตามวันที่สร้างล่าสุด
+//         { $limit: 1 } // จำกัดข้อมูลให้เหลือแค่หนึ่งรายการ (ข้อมูลล่าสุด)
+//       ]);
+//       const queueData = await queueModel.find({ userId: user._id }).sort({ updatedAt: "desc" }); // ดึงข้อมูลคิวของผู้ใช้โดยเรียงลำดับตามวันที่แก้ไขล่าสุด
+//       return { ...user._doc, health: healthData[0], queue: queueData }; // ส่งคืนข้อมูลผู้ใช้พร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้นั้น
+//     }));
 
-    return res.status(200).json(usersWithHealthAndQueue); // ส่งข้อมูลผู้ใช้ที่มีข้อมูลสุขภาพและคิวกลับไปในรูปแบบ JSON
-  } catch (error) { // จัดการข้อผิดพลาดเมื่อเกิดข้อผิดพลาดในการดึงข้อมูล
-    return res.status(400).json(error); // ส่งข้อผิดพลาดกลับไปในรูปแบบ JSON พร้อมรหัสสถานะ 400
+//     return res.status(200).json(usersWithHealthAndQueue); // ส่งข้อมูลผู้ใช้ที่มีข้อมูลสุขภาพและคิวกลับไปในรูปแบบ JSON
+//   } catch (error) { // จัดการข้อผิดพลาดเมื่อเกิดข้อผิดพลาดในการดึงข้อมูล
+//     return res.status(400).json(error); // ส่งข้อผิดพลาดกลับไปในรูปแบบ JSON พร้อมรหัสสถานะ 400
+//   }
+// };
+
+const getAllUser = async (req, res) => {
+  try {
+    const user = await userModel.aggregate([
+      {
+        $lookup: {
+          from: "queues",
+          localField: "_id",
+          foreignField: "userId",
+          as: "Queues",
+        },
+      },
+      {
+        $lookup: {
+          from: "health",
+          localField: "_id",
+          foreignField: "userId",
+          as: "Health",
+          pipeline: [
+            {
+              $sort: { createdAt: -1 },
+            },
+            {
+              $limit: 1,
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          Health: {
+            $arrayElemAt: ["$Health", 0],
+          },
+        },
+      },
+    ]);
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(400).json(error);
   }
 };
 const deleteUser = async (req, res) => {
@@ -120,19 +161,29 @@ const deleteUser = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-const searchUser = async (req,res)=> {
+const searchUser = async (req, res) => {
   try {
-    const { Search } = req.query ;
-    var regex = new RegExp(Search, 'i');
+    const { Search } = req.query;
+    var regex = new RegExp(Search, "i");
     // console.log(Search);
-    const search_data = await userModel.find({ $or:[ {firstname:regex},{lastname:regex},{_id:regex},{email:regex},{phoneNo:regex},{idCard:regex}] });
+    const search_data = await userModel.find({
+      $or: [
+        { firstname: regex },
+        { lastname: regex },
+        { _id: regex },
+        { email: regex },
+        { phoneNo: regex },
+        { idCard: regex },
+      ],
+    });
     // console.log(search_data);
-    return res.status(200).json({message:"ค้นหาสำเร็จ", Search:search_data})
+    return res
+      .status(200)
+      .json({ message: "ค้นหาสำเร็จ", Search: search_data });
   } catch (error) {
-    return res.status(400).json({message:"ค้นหาไม่สำเร็จ",error:error});
+    return res.status(400).json({ message: "ค้นหาไม่สำเร็จ", error: error });
   }
 };
-
 
 module.exports = {
   login,
@@ -141,5 +192,5 @@ module.exports = {
   updateUserProfile,
   getAllUser,
   deleteUser,
-  searchUser
+  searchUser,
 };
