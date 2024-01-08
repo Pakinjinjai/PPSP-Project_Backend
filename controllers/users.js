@@ -117,7 +117,7 @@ const getAllUser = async (req, res) => {
           from: "queues",
           localField: "_id",
           foreignField: "userId",
-          as: "Queues",
+          as: "queues",
         },
       },
       {
@@ -125,7 +125,7 @@ const getAllUser = async (req, res) => {
           from: "health",
           localField: "_id",
           foreignField: "userId",
-          as: "Health",
+          as: "health",
           pipeline: [
             {
               $sort: { createdAt: -1 },
@@ -138,8 +138,15 @@ const getAllUser = async (req, res) => {
       },
       {
         $addFields: {
-          Health: {
-            $arrayElemAt: ["$Health", 0],
+          health: {
+            $arrayElemAt: ["$health", 0],
+          },
+        },
+      },
+      {
+        $addFields: {
+          health: {
+            $ifNull: ["$health", null],
           },
         },
       },
