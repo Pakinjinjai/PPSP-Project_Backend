@@ -158,7 +158,7 @@ const getAllUser = async (req, res) => {
 };
 const deleteUser = async (req, res) => {
   try {
-    const UsersId = req.params.UsersId;
+    const UsersId = req.params._id;
     const existUsers = await userModel.findByIdAndDelete(UsersId);
     if (!existUsers) {
       return res.status(400).json({ message: "ไม่พบคิวที่ต้องการลบ" });
