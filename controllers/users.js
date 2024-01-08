@@ -89,26 +89,6 @@ const updateUserProfile = async (req, res) => {
     .status(201)
     .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existUsers });
 };
-// const getAllUser = async (req, res) => { // ฟังก์ชันที่ใช้ดึงข้อมูลผู้ใช้ทั้งหมดพร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้
-//   try { // เริ่มต้นการใช้งาน try-catch เพื่อจัดการข้อผิดพลาดที่เป็นไปได้
-//     const users = await userModel.find().sort({ updatedAt: "desc" }); // ดึงข้อมูลผู้ใช้ทั้งหมดจาก MongoDB และเรียงลำดับตามวันที่แก้ไขล่าสุด
-
-//     const usersWithHealthAndQueue = await Promise.all(users.map(async (user) => { // สร้าง Promise สำหรับแต่ละผู้ใช้เพื่อดึงข้อมูลสุขภาพและคิว
-//       const healthData = await healthModel.aggregate([ // ค้นหาข้อมูลสุขภาพล่าสุดของผู้ใช้ด้วย aggregate pipeline
-//         { $match: { userId: user._id } }, // เลือกข้อมูลที่ตรงกับ userId ของผู้ใช้นั้น
-//         { $sort: { createdAt: -1 } }, // เรียงลำดับข้อมูลตามวันที่สร้างล่าสุด
-//         { $limit: 1 } // จำกัดข้อมูลให้เหลือแค่หนึ่งรายการ (ข้อมูลล่าสุด)
-//       ]);
-//       const queueData = await queueModel.find({ userId: user._id }).sort({ updatedAt: "desc" }); // ดึงข้อมูลคิวของผู้ใช้โดยเรียงลำดับตามวันที่แก้ไขล่าสุด
-//       return { ...user._doc, health: healthData[0], queue: queueData }; // ส่งคืนข้อมูลผู้ใช้พร้อมข้อมูลสุขภาพล่าสุดและคิวของผู้ใช้นั้น
-//     }));
-
-//     return res.status(200).json(usersWithHealthAndQueue); // ส่งข้อมูลผู้ใช้ที่มีข้อมูลสุขภาพและคิวกลับไปในรูปแบบ JSON
-//   } catch (error) { // จัดการข้อผิดพลาดเมื่อเกิดข้อผิดพลาดในการดึงข้อมูล
-//     return res.status(400).json(error); // ส่งข้อผิดพลาดกลับไปในรูปแบบ JSON พร้อมรหัสสถานะ 400
-//   }
-// };
-
 const getAllUser = async (req, res) => {
   try {
     const user = await userModel.aggregate([
@@ -158,16 +138,23 @@ const getAllUser = async (req, res) => {
 };
 const deleteUser = async (req, res) => {
   try {
-    const UsersId = req.params._id;
-    const existUsers = await userModel.findByIdAndDelete(UsersId);
-    if (!existUsers) {
-      return res.status(400).json({ message: "ไม่พบคิวที่ต้องการลบ" });
+    const userId = req.params._id;
+    const deletedUser = await userModel.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res
+        .status(404)
+        .json({ message: "ไม่พบข้อมูลผู้ใช้งานที่ต้องการลบ" });
     }
-    return res.status(200).json({ message: "ลบผู้ใช้งานสำเร็จ" }).end();
+    return res
+      .status(200)
+      .json({ message: "ลบผู้ใช้งานสำเร็จ", user: deletedUser });
   } catch (error) {
-    return res.status(500).json(error);
+    return res
+      .status(500)
+      .json({ message: "พบข้อผิดพลาดในการลบผู้ใช้งาน", error: error.message });
   }
 };
+
 const searchUser = async (req, res) => {
   try {
     const { Search } = req.query;

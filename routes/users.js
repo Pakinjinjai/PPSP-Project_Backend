@@ -7,10 +7,9 @@ const {
   updateUserProfile,
   getAllUser,
   deleteUser,
-  searchUser
+  searchUser,
 } = require("../controllers/users");
 const { authorized, isAdmin } = require("../middleware/authorizations");
-
 
 route.post("/login", login);
 route.post("/register", register);
