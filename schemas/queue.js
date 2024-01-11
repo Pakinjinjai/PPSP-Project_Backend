@@ -10,9 +10,9 @@ const queueSchema = new Schema(
       type: String,
       default: null,
     },
-    dateQueue: {
+    startDate: {
       type: Date,
-      required: true,
+      default: null,
     },
     endDate: {
       type: Date,
