@@ -30,6 +30,7 @@ const register = async (req, res) => {
     return res.status(400).json(err);
   }
 };
+
 const login = async (req, res) => {
   const { email, password } = req.body; //email,password
 
@@ -57,6 +58,7 @@ const login = async (req, res) => {
     .status(200)
     .json({ message: "เข้าสู่ระบบสำเร็จ", accessToken: accessToken });
 };
+
 const getUserProfile = async (req, res) => {
   const id = req.principal;
 
@@ -69,6 +71,7 @@ const getUserProfile = async (req, res) => {
   }
   res.status(200).json({ message: "ค้นหาสำเร็จ", user: existUsers });
 };
+
 const updateUserProfile = async (req, res) => {
   const id = req.principal;
   const existUsers = await userModel.findOneAndUpdate(
@@ -89,6 +92,7 @@ const updateUserProfile = async (req, res) => {
     .status(201)
     .json({ message: "อัพเดทโปรไฟล์สำเร็จ", user: existUsers });
 };
+
 const getAllUser = async (req, res) => {
   try {
     const user = await userModel.aggregate([
@@ -136,6 +140,7 @@ const getAllUser = async (req, res) => {
     return res.status(400).json(error);
   }
 };
+
 const deleteUser = async (req, res) => {
   try {
     const userId = req.params._id;
@@ -157,24 +162,75 @@ const deleteUser = async (req, res) => {
 
 const searchUser = async (req, res) => {
   try {
+    // รับค่า parameter "Search" จาก query string
     const { Search } = req.query;
+
+    // สร้าง regular expression สำหรับการค้นหาที่ไม่ต้องการตรงตัว
     var regex = new RegExp(Search, "i");
-    // console.log(Search);
-    const search_data = await userModel.find({
-      $or: [
-        { firstname: regex },
-        { lastname: regex },
-        { _id: regex },
-        { email: regex },
-        { phoneNo: regex },
-        { idCard: regex },
-      ],
-    });
-    // console.log(search_data);
-    return res
-      .status(200)
-      .json({ message: "ค้นหาสำเร็จ", Search: search_data });
+
+    // ทำการค้นหาข้อมูลผู้ใช้ที่ตรงกับเงื่อนไขด้านล่าง
+    const search_data = await userModel.aggregate([
+      {
+        // ใช้ match เพื่อกรองข้อมูลที่ตรงกับเงื่อนไข
+        $match: {
+          $or: [
+            { firstname: regex },
+            { lastname: regex },
+            { _id: regex },
+            { email: regex },
+            { phoneNo: regex },
+            { idCard: regex },
+          ],
+        },
+      },
+      {
+        // ใช้ lookup เพื่อดึงข้อมูลจาก collection "queues"
+        $lookup: {
+          from: "queues",
+          localField: "_id",
+          foreignField: "userId",
+          as: "queues",
+        },
+      },
+      {
+        // ใช้ lookup เพื่อดึงข้อมูลจาก collection "health" และทำการจัดเรียงข้อมูล
+        $lookup: {
+          from: "health",
+          localField: "_id",
+          foreignField: "userId",
+          as: "health",
+          pipeline: [
+            {
+              $sort: { createdAt: -1 },
+            },
+            {
+              $limit: 1,
+            },
+          ],
+        },
+      },
+      {
+        // ใช้ addFields เพื่อเพิ่ม field "health" และทำการดึงค่าจาก array
+        $addFields: {
+          health: {
+            $arrayElemAt: ["$health", 0],
+          },
+        },
+      },
+      {
+        // ใช้ addFields เพื่อเพิ่ม field "health" และกำหนดค่าเริ่มต้นในกรณีที่ไม่มีข้อมูล
+        $addFields: {
+          health: {
+            $ifNull: ["$health", null],
+          },
+        },
+      },
+    ]);
+
+    // ส่งข้อมูลผลลัพธ์กลับในรูปแบบ JSON
+    return res.status(200).json({ message: "ค้นหาสำเร็จ", Search: search_data });
   } catch (error) {
+    // กรณีเกิดข้อผิดพลาดในการค้นหา
     return res.status(400).json({ message: "ค้นหาไม่สำเร็จ", error: error });
   }
 };
