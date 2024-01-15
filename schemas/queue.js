@@ -22,6 +22,11 @@ const queueSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    //locations flase == online || true == onsite
+    locations:{
+      type: Boolean,
+      default: false,
+    },
     userId: {
       type: String,
       required: true,
