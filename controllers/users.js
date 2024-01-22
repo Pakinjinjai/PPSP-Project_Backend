@@ -180,6 +180,7 @@ const searchUser = async (req, res) => {
             { email: regex },
             { phoneNo: regex },
             { idCard: regex },
+            { topic: regex },
           ],
         },
       },
