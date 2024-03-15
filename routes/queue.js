@@ -5,11 +5,11 @@ const route = express.Router();
 
 route.get("/me", authorized, getQueuesByUser);
 
-route.get("/", authorized, isAdmin, getAllQueue);
+route.get("/get-all", authorized, isAdmin, getAllQueue);
 
-route.post("/", authorized, isAdmin, addQueue);
+route.post("/add", authorized, isAdmin, addQueue);
 
-route.patch("/:queueId", authorized, isAdmin, updateQueue);
+route.patch("/update/:queueId", authorized, isAdmin, updateQueue);
 
 route.delete("/:queueId", authorized, isAdmin, deleteQueue);
 

@@ -4,9 +4,9 @@ const { authorized } = require('../middleware/authorizations');
 
 const route = express.Router();
 
-route.get('/',authorized,getMeHealth);
+route.get('/me',authorized,getMeHealth);
 
-route.post('/',authorized,addMeHealth);
+route.post('/addme',authorized,addMeHealth);
 
 route.patch('/:healthId',authorized,updateMeHealth);
 
