@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("./configs/database");
 require("./broker");
+require('dotenv').config();
 const routes = require("./routes/routes");
 
 const main = async () => {
