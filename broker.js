@@ -15,5 +15,5 @@ mqtt.listen(1883, () => {
 });
 
 wsServer.listen(8883, () => {
-  console.log("Broker MQTT running on port 8883");
+  console.log("WebSocket running on port 8883");
 });
