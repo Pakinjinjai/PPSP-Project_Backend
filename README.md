@@ -1,4 +1,4 @@
-### Project Structure..        
+### Server side Project Structure..        
     ├── configs
     │   ├── database.js
     │   ├── hash.js
