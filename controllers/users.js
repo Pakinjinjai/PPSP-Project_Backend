@@ -3,7 +3,6 @@ const healthModel = require("../schemas/health");
 const queueModel = require("../schemas/queue");
 const { passwordHashing, passwordCompare } = require("../configs/hash");
 const { createJWT } = require("../configs/jsonwebtoken");
-const { response } = require("express");
 const dayjs = require("dayjs");
 
 const register = async (req, res) => {
