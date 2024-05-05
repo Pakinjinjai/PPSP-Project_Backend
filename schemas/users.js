@@ -77,19 +77,7 @@ const userSchema = new Schema(
         default: null,
       },
     },
-    noteDrug: {
-      type: String,
-      default: null,
-    },
-    noteMedicine: {
-      type: String,
-      default: null,
-    },
     noteDisease: {
-      type: String,
-      default: null,
-    },
-    takingMed: {
       type: String,
       default: null,
     },
