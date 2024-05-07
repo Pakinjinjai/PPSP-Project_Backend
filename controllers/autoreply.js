@@ -24,10 +24,16 @@ const HealthCareprefig = async(client, Replytoken, Keywords)=>{
             else {
                 client.replyMessage({
                     replyToken: Replytoken,
-                    messages: [{
+                    messages: [
+                        {
                         type: 'text',
                         text: "ไม่พบคีย์เวิร์ดที่ท่านค้นหา กรุณาพิมพ์ใหม่อีกครั้งค่ะ"
-                    }],
+                        },
+                        {
+                            type: 'text',
+                            text: "สามารถดูคำสั่งการใช้งานได้ที่ประกาศของทางเราค่ะ"
+                        }
+                    ],
                 });
             }
         } catch (error) {
