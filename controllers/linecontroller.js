@@ -112,7 +112,7 @@ async function handleEvent(event) {
       }
       if (event.message.text.includes("ตรวจสอบคิว")){
         const queues = await queueModel.find({ userId: existuser.userId, status: false });
-        if (queues.length < 0) {
+        if (queues.length === 0) {
           client.replyMessage({
             replyToken:event.replyToken,
             messages: [{
