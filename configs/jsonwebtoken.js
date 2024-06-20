@@ -1,9 +1,11 @@
 const { sign, verify } = require("jsonwebtoken");
+require('dotenv').config();
 
-const secretKey = "#12345678@!45%#@";
+
+const secretKey = process.env.SECRET_KEY||"#12345678@!45%#@";
 
 const createJWT = (payload) => {
-  const token = sign(payload, secretKey, { expiresIn: "100D" });
+  const token = sign(payload, secretKey, { expiresIn: "7D" });
   return token;
 };
 
